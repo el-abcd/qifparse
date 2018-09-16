@@ -151,9 +151,9 @@ class BaseEntry(object):
         res = []
         for field in self._fields:
             val = getattr(self, field.name)
-            if not field.required and not val:
+            if not field.required and val is None:
                 continue
-            elif field.required and not val:
+            elif field.required and val is None: # Check it has been changed from the default (None)
                 raise RuntimeError(
                     six.u("required field '%s' not yet set" % field.name))
             if field.custom_print_format:

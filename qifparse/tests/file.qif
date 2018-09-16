@@ -32,6 +32,32 @@ $-17.00
 NMy Cc
 TInvst
 ^
+!Type:Bank
+D11/10'13
+U0.00
+T0.00
+CX
+POpening Balance
+Mauto-created, delete when enter all actual data!
+L[SomeAccountName]
+^
+D11/12'13
+U-3,500.00
+T-3,500.00
+CX
+N219
+PSome text
+MSome more text
+L[SomeCategory]/SomeClass
+^
+D11/15'13
+U-2,347.17
+T-2,347.17
+CX
+POnline Payment - Thank You
+MACH PMT 131115 Some Text
+L[SomeAccount]
+^
 !Type:Invst
 D25/07/1993
 NShrsIn

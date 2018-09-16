@@ -53,7 +53,7 @@ class QifParser(object):
         for chunk in chunks:
             if not chunk:
                 continue
-            first_line = chunk.split('\n')[0]
+            first_line = chunk.split('\n')[0].strip()
             if first_line == '!Type:Cat':
                 last_type = 'category'
             elif first_line == '!Account':
@@ -121,7 +121,7 @@ class QifParser(object):
             elif line[0] == 'I':
                 curItem.income_category = True
                 curItem.expense_category = False  # if ommitted is True
-            elif line[0] == 'T':
+            elif line[0] in ['T', 'U'] :  # Treat U the same as T, https://en.wikipedia.org/wiki/Quicken_Interchange_Format
                 curItem.tax_related = True
             elif line[0] == 'D':
                 curItem.description = line[1:]
@@ -146,7 +146,7 @@ class QifParser(object):
                 curItem.name = line[1:]
             elif line[0] == 'D':
                 curItem.description = line[1:]
-            elif line[0] == 'T':
+            elif line[0] in ['T', 'U']:
                 curItem.account_type = line[1:]
             elif line[0] == 'L':
                 curItem.credit_limit = line[1:]
@@ -171,8 +171,8 @@ class QifParser(object):
             if not len(line) or line[0] == '\n' or \
                     line.startswith('!Type:Memorized'):
                 continue
-            elif line[0] == 'T':
-                curItem.amount = Decimal(line[1:])
+            elif line[0] in ['T', 'U']:
+                curItem.amount = Decimal(line[1:].replace(',',''))
             elif line[0] == 'C':
                 curItem.cleared = line[1:]
             elif line[0] == 'P':
@@ -209,7 +209,7 @@ class QifParser(object):
                 split.address.append(line[1:])
             elif line[0] == '$':
                 split = curItem.splits[-1]
-                split.amount = Decimal(line[1:])
+                split.amount = Decimal(line[1:].replace(',',''))
             else:
                 # don't recognise this line; ignore it
                 print ("Skipping unknown line:\n" + str(line))
@@ -231,8 +231,8 @@ class QifParser(object):
                 curItem.date = cls_.parseQifDateTime(line[1:])
             elif line[0] == 'N':
                 curItem.num = line[1:]
-            elif line[0] == 'T':
-                curItem.amount = Decimal(line[1:])
+            elif line[0] in ['T', 'U']:
+                curItem.amount = Decimal(line[1:].replace(',',''))
             elif line[0] == 'C':
                 curItem.cleared = line[1:]
             elif line[0] == 'P':
@@ -281,7 +281,7 @@ class QifParser(object):
                 split.address.append(line[1:])
             elif line[0] == '$':
                 split = curItem.splits[-1]
-                split.amount = Decimal(line[1:])
+                split.amount = Decimal(line[1:].replace(',',''))
             else:
                 # don't recognise this line; ignore it
                 print ("Skipping unknown line:\n" + str(line))
@@ -301,16 +301,16 @@ class QifParser(object):
                 continue
             elif line[0] == 'D':
                 curItem.date = cls_.parseQifDateTime(line[1:])
-            elif line[0] == 'T':
-                curItem.amount = Decimal(line[1:])
+            elif line[0] in ['T', 'U']:
+                curItem.amount = Decimal(line[1:].replace(',',''))
             elif line[0] == 'N':
                 curItem.action = line[1:]
             elif line[0] == 'Y':
                 curItem.security = line[1:]
             elif line[0] == 'I':
-                curItem.price = Decimal(line[1:])
+                curItem.price = Decimal(line[1:].replace(',',''))
             elif line[0] == 'Q':
-                curItem.quantity = Decimal(line[1:])
+                curItem.quantity = Decimal(line[1:].replace(',',''))
             elif line[0] == 'C':
                 curItem.cleared = line[1:]
             elif line[0] == 'M':
@@ -320,9 +320,9 @@ class QifParser(object):
             elif line[0] == 'L':
                 curItem.to_account = line[2:-1]
             elif line[0] == '$':
-                curItem.amount_transfer = Decimal(line[1:])
+                curItem.amount_transfer = Decimal(line[1:].replace(',',''))
             elif line[0] == 'O':
-                curItem.commission = Decimal(line[1:])
+                curItem.commission = Decimal(line[1:].replace(',',''))
         return curItem
 
     @classmethod
@@ -333,11 +333,14 @@ class QifParser(object):
              or, it seems (citibankdownload 20002) like "01/22/2002"
              or, (Paypal 2011) like "3/2/2011".
         ISO is like   YYYY-MM-DD  I think @@check
+		Note: Quicken Premier 2018 (R11.20) will output dates like:
+			D11/15'13 which should be converted to 2013-11-15
+			ToDo: Will this break handling of older dates?
         """
         if qdate[1] == "/":
             qdate = "0" + qdate   # Extend month to 2 digits
         if qdate[4] == "/":
-            qdate = qdate[:3]+"0" + qdate[3:]   # Extend month to 2 digits
+            qdate = qdate[:3]+"0" + qdate[3:]   # Extend day to 2 digits
         for i in range(len(qdate)):
             if qdate[i] == " ":
                 qdate = qdate[:i] + "0" + qdate[i+1:]
@@ -348,5 +351,5 @@ class QifParser(object):
             C = "20"
         else:
             C = "19"
-        iso_date = C + qdate[6:8] + "-" + qdate[3:5] + "-" + qdate[0:2]
+        iso_date = C + qdate[6:8] + "-" + qdate[0:2] + "-" + qdate[3:5]
         return datetime.strptime(iso_date, '%Y-%m-%d')
