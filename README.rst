@@ -60,3 +60,4 @@ For more informations about qif format:
 
 * http://en.wikipedia.org/wiki/Quicken_Interchange_Format
 * http://svn.gnucash.org/trac/browser/gnucash/trunk/src/import-export/qif-import/file-format.txt
+* https://web.archive.org/web/20100222214101/http://web.intuit.com/support/quicken/docs/d_qif.html

@@ -1,7 +1,13 @@
 Changelog
 ===========
 
-0.6 (unreleased)
+0.7 (unreleased)
+----------------
+* Misc fixes for dates, whitespace, 'U' format codes, etc.
+* NOTE: There ARE pull requests with better date fixes!
+* But I want something I can just get going with locally...
+
+0.6 (2016-06-22)
 ----------------
 * fixed typo in account types
 
